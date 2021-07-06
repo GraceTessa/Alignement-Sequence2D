@@ -49,6 +49,7 @@ int classic_seq_edit_distance(const string &a, const string &b)
  string* first_pattern_construction (int str_size_1, int nb_str_1) {
       ifstream datasets("input/datasets.txt");
       string* motif_1;
+      string str1;
       motif_1 = new string[nb_str_1];
       if (datasets) {
          string dataset;
@@ -56,11 +57,10 @@ int classic_seq_edit_distance(const string &a, const string &b)
          ifstream input(dataset);
          if (input) {
              for (int i = 0; i < nb_str_1; i++) {
-                 string str1;
                  input >> str1;
                  if (str_size_1 > str1.size()) {
                      if (str_size_1 > str1.size()) {
-                         cout << "[ERROR]the max size of the first string is" << str1.size() << "in the dataset" << dataset << endl;
+                         cout << "1[ERROR]the max size of the first string is" << str1.size() << "in the dataset" << dataset << endl;
                      }
 
                      exit(0);
@@ -81,6 +81,7 @@ int classic_seq_edit_distance(const string &a, const string &b)
  string* second_pattern_construction (int str_size_2, int nb_str_2) {
       ifstream datasets("input/datasets.txt");
       string* motif_2;
+      string str2;
       motif_2 = new string[nb_str_2];
       if (datasets) {
          string dataset;
@@ -88,11 +89,10 @@ int classic_seq_edit_distance(const string &a, const string &b)
          ifstream input(dataset);
          if (input) {
              for (int i = 0; i < nb_str_2; i++) {
-                string str2;
                  input >> str2;
                  if (str_size_2 > str2.size()) {
                      if (str_size_2 > str2.size()) {
-                         cout << "[ERROR]the max size of the first string is" << str2.size() << "in the dataset" << dataset << endl;
+                         cout << "2[ERROR]the max size of the first string is" << str2.size() << "in the dataset" << dataset << endl;
                     }
                      exit(0);
                 }
@@ -259,8 +259,6 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
 //Filling of T table
 void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2, string* motif_1, string* motif_2){
 
-     time_t first_timer;
-     time_t second_timer;
 
      int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
      int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
@@ -282,7 +280,6 @@ void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2,
      }
 
 
-     int start = time(nullptr)*1000;
 
 
 //Initalization maginales of T table
@@ -325,8 +322,6 @@ void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2,
          }
 
 
-        int end = time(nullptr)*1000;
-
 //Display of T table
     cout <<"\n Display T table \n" << endl;
     for (int i = 0; i < nb_str_1; i++) {
@@ -338,25 +333,31 @@ void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2,
              }
         }
      }
-    cout << "Treatment start period is about "<< start << endl;
-    cout << "Treatment end period is about "<< end << endl;
+   
 }
 
 
 
 int main(int argc, char *argv[]) {
+	time_t first_timer;
+    time_t second_timer;
+    int start = time( &first_timer);
 
-    unsigned int str_size_1 = 4096, str_size_2 = 4096;
+
+    unsigned int str_size_1 = 2048, str_size_2 = 2048;
     string str1 = "tessa";
     string str2 = "Grace";
 
-    int nb_str_1 = 4096, nb_str_2 = 4096;
+    int nb_str_1 = 2048, nb_str_2 = 2048;
     ifstream datasets("input/datasets.txt");
     string* motif_1= first_pattern_construction(str_size_1, nb_str_1);
     string* motif_2 = second_pattern_construction(str_size_2, nb_str_2);
     t_matrice_func(str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
 
-
+ 	int end = time(& second_timer);
+    	cout << "Treatment start period is about "<< start << endl;
+    	cout << "Treatment end period is about "<< end << endl;
+     	cout << "Treatment end period is about "<< end-start<< endl;
 
 
 }

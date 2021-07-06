@@ -344,11 +344,11 @@ int main(int argc, char *argv[]) {
     int start = time( &first_timer);
 
 
-    unsigned int str_size_1 = 512, str_size_2 = 512;
+    unsigned int str_size_1 = 20, str_size_2 = 25;
     string str1 = "tessa";
     string str2 = "Grace";
 
-    int nb_str_1 = 512, nb_str_2 = 512;
+    int nb_str_1 = 20, nb_str_2 = 25;
     ifstream datasets("input/datasets.txt");
     string* motif_1= first_pattern_construction(str_size_1, nb_str_1);
     string* motif_2 = second_pattern_construction(str_size_2, nb_str_2);
