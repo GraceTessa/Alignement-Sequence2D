@@ -42,7 +42,13 @@ int classic_seq_edit_distance(const string &a, const string &b)
             scores[i][j] = min({x, y, z});
         }
     }
-    return scores[m][n];
+    int result =  scores[m][n];
+
+    for (int i= 0; i < m+1; i++){
+        delete scores[i];
+    }
+    delete[] scores;
+    return result;
 }
 
 // Building patterns called "motif"
@@ -175,6 +181,7 @@ int** ic_matrice_func(int str_size_2, int nb_str_2){
 
 // Filling of R table
 int**** r_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_2, string* motif_1, string* motif_2){
+      cout << "R- matrice allocated -Start " << endl;
      int**** r_matrice;
      r_matrice = new int*** [nb_str_1];
      for (int i= 0; i < nb_str_1; i++){
@@ -187,6 +194,7 @@ int**** r_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
          }
      }
 
+    cout << "R- matrice allocated -End" << endl;
 
      for (int i = 0; i < nb_str_1; i++) {
          for (int j = 0; j < str_size_1; j++) {
@@ -200,13 +208,15 @@ int**** r_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
          }
 
      }
-
+cout << "R- matrice computation -End" << endl;
      return r_matrice;
 }
 
 
 // Filling of C table
 int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_2, string* motif_1, string* motif_2) {
+
+    cout << "C- matrice allocated -Start " << endl;
 
     int**** c_matrice;
     c_matrice = new int*** [nb_str_1];
@@ -220,6 +230,8 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
         }
     }
 
+    cout << "C- matrice allocated -End" << endl;
+    
     string* motif_trans_1 = new string[str_size_1];
     for (int j = 0; j < str_size_1; j++) {
         string str_trans_1(nb_str_1, '0');
@@ -250,6 +262,7 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
          }
 
     }
+    cout << "C- matrice computation -End" << endl;
 
      return c_matrice;
 }
@@ -258,15 +271,25 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
 
 //Filling of T table
 void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2, string* motif_1, string* motif_2){
+    time_t first_pre_timer;
+    time_t second_pre_timer;
+    time_t f_timer;
+    time_t s_timer;
 
-
+    double pre_start = time(&first_pre_timer);
      int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
      int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
      int** ir_mat = ir_matrice_func(str_size_2, nb_str_2);
      int** ic_mat = ic_matrice_func(str_size_2, nb_str_2);
+
+    
      int**** r_mat = r_matrice_func(str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
      int**** c_mat = c_matrice_func(str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
+     double pre_end = time(&second_pre_timer);
 
+    cout << "Pre-treatment period is about "<< pre_end - pre_start << endl;
+
+    double  p_start = time(&f_timer);
      int**** t_matrice;
      t_matrice = new int*** [nb_str_1];
      for (int i= 0; i < nb_str_1; i++){
@@ -321,18 +344,20 @@ void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2,
 
          }
 
+double  s_end = time(&s_timer);
 
+cout << "Main treatment period is about "<< s_end - p_start << endl;
 //Display of T table
-    cout <<"\n Display T table \n" << endl;
-    for (int i = 0; i < nb_str_1; i++) {
-         for (int j = 0; j < str_size_1; j++) {
-             for (int k = 0; k < nb_str_2; k++) {
-                 for (int l = 0; l < str_size_2; l++) {
-                     cout << i << " " << j << " " << k << " " << l << " -> " << t_matrice[i][j][j][l] << endl;
-                 }
-             }
-        }
-     }
+    //  cout <<"\n Display T table \n" << endl;
+    //  for (int i = 0; i < nb_str_1; i++) {
+    //      for (int j = 0; j < str_size_1; j++) {
+    //           for (int k = 0; k < nb_str_2; k++) {
+    //               for (int l = 0; l < str_size_2; l++) {
+    //                  cout << i << " " << j << " " << k << " " << l << " -> " << t_matrice[i][j][j][l] << endl;
+    //               }
+    //           }
+    //      }
+    //   }
    
 }
 
@@ -344,11 +369,12 @@ int main(int argc, char *argv[]) {
     int start = time( &first_timer);
 
 
-    unsigned int str_size_1 = 256, str_size_2 = 256;
+    unsigned int str_size_1 = 20, str_size_2 = 20;
     string str1 = "tessa";
     string str2 = "Grace";
 
-    int nb_str_1 = 256, nb_str_2 = 256;
+    int nb_str_1 = 20, nb_str_2 = 20;
+   
     ifstream datasets("input/datasets.txt");
     string* motif_1= first_pattern_construction(str_size_1, nb_str_1);
     string* motif_2 = second_pattern_construction(str_size_2, nb_str_2);
@@ -357,7 +383,7 @@ int main(int argc, char *argv[]) {
  	int end = time(& second_timer);
     	cout << "Treatment start period is about "<< start << endl;
     	cout << "Treatment end period is about "<< end << endl;
-     	cout << "Treatment end period is about "<< end-start<< endl;
+     	cout << " Global Treatment  period is about "<< end-start<< endl;
 
 
 }
