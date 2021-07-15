@@ -139,13 +139,12 @@ int classic_seq_edit_distance(const string &a, const string &b)
     int m = a.size();
     int n = b.size();
 
-    int **scores = new int *[m + 1];
-    scores[0] = new int[(m + 1) * (n + 1)];
-    for (int i = 1; i < m + 1; i++)
-    {
-        scores[i] = scores[0] + i * (n + 1);
+    int** scores;
+    scores = new int* [m + 1];
+    for (int i= 0; i < m+1; i++){
+        scores[i] = new int[n+1];
     }
-    
+
 
     for (int i = 0; i <= m; ++i)
         scores[i][0] = i;
@@ -167,17 +166,18 @@ int classic_seq_edit_distance(const string &a, const string &b)
             int y = scores[i][j - 1] + 1;     // Insertion
             int z = scores[i - 1][j - 1] + 1; // Substitution
 
-            int t = min(x, y);
-
-            scores[i][j] = min(t, z);
+            scores[i][j] = min({x, y, z});
         }
     }
     int result =  scores[m][n];
+
+     cout << "TESSA"<< endl;
 
     for (int i= 0; i < m+1; i++){
         delete scores[i];
     }
     delete[] scores;
+
     return result;
 }
 
@@ -255,6 +255,7 @@ int classic_seq_edit_distance(const string &a, const string &b)
      for (int i = 0; i < str_size_1; i++) {
          for (int j = 0; j < nb_str_1; j++) {
              dr_matrice[i][j] = (j + 1);
+             
          }
      }
    return dr_matrice;
@@ -272,6 +273,7 @@ int** dc_matrice_func(int str_size_1, int nb_str_1){
     for (int i = 0; i < str_size_1; i++) {
          for (int j = 0; j <  nb_str_1; j++) {
              dc_matrice[i][j] = (i + 1);
+             
          }
      }
     return dc_matrice;
@@ -287,6 +289,7 @@ int** dc_matrice_func(int str_size_1, int nb_str_1){
      for (int i = 0; i < str_size_2; i++) {
          for (int j = 0; j < nb_str_2; j++) {
              ir_matrice[i][j] = (j + 1);
+             
          }
      }
     return ir_matrice;
@@ -302,6 +305,7 @@ int** ic_matrice_func(int str_size_2, int nb_str_2){
      for (int i = 0; i < str_size_2; i++) {
          for (int j = 0; j < nb_str_2; j++) {
              ic_matrice[i][j] = (i + 1);
+             
         }
      }
      return ic_matrice;
@@ -317,6 +321,7 @@ int**** r_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
              r_matrice[i][j] = new int*[nb_str_2];
              for (int k= 0; k < nb_str_2; k++){
                  r_matrice[i][j][k] = new int[str_size_2];
+                 cout << "TESSA"<< endl;
              }
          }
      }
@@ -327,6 +332,7 @@ int**** r_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
              for (int k = 0; k < nb_str_2; k++) {
                for (int l = 0; l < str_size_2; l++) {
                     r_matrice[i][j][k][l] = classic_seq_edit_distance(motif_1[i].substr(0, j), motif_2[k].substr(0, l));
+                    
                  }
 
              }
@@ -350,6 +356,7 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
             c_matrice[i][j] = new int*[nb_str_2];
             for (int k= 0; k < nb_str_2; k++){
                 c_matrice[i][j][k] = new int[str_size_2];
+                cout << "TESSA"<< endl;
             }
         }
     }
@@ -377,6 +384,7 @@ int**** c_matrice_func(int str_size_1, int str_size_2, int nb_str_1, int nb_str_
              for (int k = 0; k < nb_str_2; k++) {
                  for (int l = 0; l < str_size_2; l++) {
                      c_matrice[i][j][k][l] = classic_seq_edit_distance(motif_trans_1[i].substr(0, j), motif_trans_2[k].substr(0, l));
+                     cout << "TESSA"<< endl;
                  }
 
              }
@@ -404,135 +412,295 @@ void t_matrice_func(int argc, char *argv[], int str_size_1, int str_size_2, int 
 
     int rank;
     int nproc;
+    MPI_Status status;
     // First call MPI_Init
     MPI_Init(&argc, &argv);
+
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
    // Get my rank
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int taille_motif = motif_1->size();
-    cout << rank << " La talle du motif  est de : " << taille_motif << endl;
+    time_t first_pre_timer;
+    time_t second_pre_timer;
+    time_t f_timer;
+    time_t s_timer;
+    double pre_start = time(&first_pre_timer);
+    int taille_motif = motif_1 -> size();
+    cout << "motif length = "<< taille_motif << endl;
+    int nombre_de_ligne_par_processeur = taille_motif/ nproc;
 
-    int nombre_de_ligne_par_processeur = nb_str_1/ nproc;
-    cout << rank << " Mon nombre de ligne est : " << nombre_de_ligne_par_processeur << endl;
-
-    string* new_motif = new string[nombre_de_ligne_par_processeur];
-    string** all_new_motifs = new string* [nproc];
+    //string* new_motif = new string[nombre_de_ligne_par_processeur];
+    string** all_new_motifs = new string*[nproc];
     for (int i= 0; i < nproc; i++){
                  all_new_motifs[i] = new string[nombre_de_ligne_par_processeur];
              }
-    int cpt = 0;
 
-    while (cpt != taille_motif - 1) {
-        int i = 0;
-        if (new_motif->size() != nombre_de_ligne_par_processeur){
-            (*new_motif).append(motif_1[cpt]);
-            cpt += 1;
-        }
-        else
+    
+    /*Begin artitionnig */
+    int step = 0;
+    // string** all_new_motifs = new string*[nproc];
+    for (int i = 0; i < nombre_de_ligne_par_processeur; i++)
+    {
+        string* new_motif = new string[nombre_de_ligne_par_processeur];
+        int cpt = 0;
+        cout << "1 --> new motif length = "<< new_motif->size() << endl;
+        while (new_motif.size() != nombre_de_ligne_par_processeur)
         {
-            all_new_motifs[i] = new_motif;
-            string * new_motif = new string[nombre_de_ligne_par_processeur];
-            cpt += 1;
-            i = i+ 1;
+            cout << "my motif = "<< motif_1[step] << endl;
+            string inter =  motif_1[step];
+            new_motif[cpt] = inter;
+            cout << "my new motif = "<< new_motif[cpt] << endl;
+            cout << "3 --> new motif length = "<< sizeof(*new_motif) / sizeof(string) << endl;
+            step++;
+            cpt ++;
         }
+        cout << "i completed the while function with success !!!" << endl;
+        cout << "2 --> new motif length = "<< sizeof(*new_motif) / sizeof(string) << endl;
+        (*all_new_motifs)->append(*new_motif);
         
     }
+    cout << "all motifs length = "<< (*all_new_motifs)->size() << endl;
+
 
     string * my_motif = new string [nombre_de_ligne_par_processeur];
     for (int rk = 0; rk < nproc; rk++){
         if (rank == rk){
             my_motif  = all_new_motifs[rk];
+            cout<<"my_motif"<< my_motif[rk] <<endl;
         }
     }
 
-     int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
-     int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
-     int** ir_mat = ir_matrice_func(str_size_2, nb_str_2);
-     int** ic_mat = ic_matrice_func(str_size_2, nb_str_2);
-     int**** r_mat = r_matrice_func(my_motif[0].size(), str_size_2, my_motif->size(), nb_str_2, my_motif, motif_2);
-     int**** c_mat = c_matrice_func(my_motif[0].size(), str_size_2, my_motif->size(), nb_str_2, my_motif, motif_2);
     
-    //prepare data partitioning data structure.
-    Dag my_dag;
-    Cube* my_cube = my_dag.buildDag(nproc, str_size_1, str_size_2, nb_str_1, nb_str_2);
+    int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
+    int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
+    int** ir_mat = ir_matrice_func(str_size_2, nb_str_2);
+    int** ic_mat = ic_matrice_func(str_size_2, nb_str_2);
+    int**** r_mat = r_matrice_func(my_motif[0].size(), str_size_2, my_motif->size(), nb_str_2, my_motif, motif_2);
+    cout<<"my_motif[0].size==>  "<< my_motif[0].size() << "" << "  my_motif->size==>  " <<  my_motif->size()<< ""<<endl;
+    cout<<"my_motif"<< *my_motif <<endl;
+    int**** c_mat = c_matrice_func(my_motif[0].size(), str_size_2, my_motif->size(), nb_str_2, my_motif, motif_2);
+    double pre_end = time(&second_pre_timer);
+    int pre_computation_size = my_motif[0].size()*my_motif->size()*str_size_2*nb_str_2;
+    int pre_computation_final_size = str_size_1*nb_str_1*str_size_2*nb_str_2;
+    
+    //Communicate global precomputation
 
-    cout <<'my cube'<< my_cube << endl;
-
-    for (int l = 0; l < nb_str_2; l++)
-    {
-
+    for (int i = 0; i < my_motif->size() ; i++) {
+        for (int j = 0; j < my_motif[0].size(); j++) {
+           for (int k = 0; k < nb_str_2; k++) {
+               for (int l = 0; l < str_size_2; l++) {
+                      cout << i << " " << j << " " << k << " " << l << " TESSA-> " << r_mat[i][j][j][l] << endl;
+                   }
+               }
+          }
+       }
+    
+    if (rank != 0){
+         MPI_Send(&r_mat, pre_computation_size, MPI_INT, 0, rank, MPI_COMM_WORLD);
+         MPI_Send(&c_mat, pre_computation_size, MPI_INT, 0, rank, MPI_COMM_WORLD);
     }
+    else
+    {
+        int**** r_matrice;
+        r_matrice = new int*** [nb_str_1];
 
+        for (int i= 0; i < nb_str_1; i++){
+            r_matrice[i] = new int**[str_size_1];
+            for (int j= 0; j < str_size_1; j++){
+                r_matrice[i][j] = new int*[nb_str_2];
+                for (int k= 0; k < nb_str_2; k++){
+                    r_matrice[i][j][k] = new int[str_size_2];
+                }
+            }
+        }
 
-    int**** t_matrice;
-        t_matrice = new int*** [nb_str_1];
-            for (int i= 0; i < nb_str_1; i++){
-            t_matrice[i] = new int**[str_size_1];
-                for (int j= 0; j < str_size_1; j++){
-                t_matrice[i][j] = new int*[nb_str_2];
+         int**** c_matrice;
+        c_matrice = new int*** [nb_str_1];
+
+        for (int i= 0; i < nb_str_1; i++){
+            c_matrice[i] = new int**[str_size_1];
+            for (int j= 0; j < str_size_1; j++){
+                c_matrice[i][j] = new int*[nb_str_2];
+                for (int k= 0; k < nb_str_2; k++){
+                    c_matrice[i][j][k] = new int[str_size_2];
+                }
+            }
+        }
+
+        int lineFilledR = 0;
+        int lineFilledC = 0;
+
+        for (int i = 0; i < my_motif[0].size(); i++) {
+            for (int j = 0; j < my_motif[0].size(); j++) {
+                for (int k = 0; k < nb_str_2; k++) {
+                    for (int l = 0; l < str_size_2; l++) {
+                            r_matrice[i][j][k][l] = r_mat[i][j][k][l];
+
+                    }
+                }
+
+            }
+
+            lineFilledR++;
+        } 
+
+        for (int i = 0; i < my_motif[0].size(); i++) {
+            for (int j = 0; j < my_motif[0].size(); j++) {
+                for (int k = 0; k < nb_str_2; k++) {
+                    for (int l = 0; l < str_size_2; l++) {
+                            c_matrice[i][j][k][l] = c_mat[i][j][k][l];
+                    }
+                }
+
+            }
+
+            lineFilledC++;
+        }    
+
+        
+
+        for (int rk = 1; rk < nproc; rk++)
+        {
+            int**** r_matrice_rk;
+            r_matrice_rk = new int*** [my_motif[0].size()];
+            for (int i= 0; i < my_motif[0].size(); i++){
+                r_matrice_rk[i] = new int**[my_motif[0].size()];
+                for (int j= 0; j < my_motif[0].size(); j++){
+                    r_matrice_rk[i][j] = new int*[nb_str_2];
                     for (int k= 0; k < nb_str_2; k++){
-                    t_matrice[i][j][k] = new int[str_size_2];
-             }
-         }
-     }
+                        r_matrice_rk[i][j][k] = new int[str_size_2];
+                    }
+                }
+            }
+
+            int**** c_matrice_rk;
+            c_matrice_rk = new int*** [my_motif[0].size()];
+            for (int i= 0; i < my_motif[0].size(); i++){
+                c_matrice_rk[i] = new int**[my_motif[0].size()];
+                for (int j= 0; j < my_motif[0].size(); j++){
+                    c_matrice_rk[i][j] = new int*[nb_str_2];
+                    for (int k= 0; k < nb_str_2; k++){
+                        c_matrice_rk[i][j][k] = new int[str_size_2];
+                    }
+                }
+            }
 
 
-
-
-
-
-///Initalization maginales of T table
-         for (int i = 0; i < my_motif->size(); i++) {
-             for (int j = 0; j < my_motif[0].size(); j++) {
-                 for (int k = 0; k < nb_str_2; k++) {
-                     for (int l = 0; l < str_size_2; l++) {
-                         t_matrice[i][j][k][l] = 0;
-                         t_matrice[0][j][k][l] = (k+1)*(l+1);
-                         t_matrice[i][0][k][l] = (k+1)*(l+1);
-                         t_matrice[i][j][0][l] = (i+1)*(j+1);
-                         t_matrice[i][j][k][0] = (i+1)*(j+1);
-                     }
-
-                 }
-
-             }
-         }
-
-         cout <<"nb_str_1->"<<nb_str_1 <<"str_size_1->"<<str_size_1 <<"nb_str_2->"<<nb_str_2 <<"str_size_2->"<<str_size_2 <<endl;
-
-//Filling of T table
-         for (int i = 1; i < my_motif->size(); i++) {
-             for (int j = 1; j < my_motif[0].size(); j++) {
-                 for (int k = 1; k < nb_str_2; k++) {
-                     for (int l = 1; l < str_size_2; l++) {
-                         int val1 = max(t_matrice[i-1][j][k][l] + dr_mat[i][nb_str_1-1], t_matrice[i][j-1][k][l] + dc_mat[i][nb_str_1-1]);
-                         int val2 = max(val1, t_matrice[i][j][k-1][l] + ir_mat[i][nb_str_2-1]);
-                         int val3 = max(val2, t_matrice[i][j][k-1][l-1] + ic_mat[i][nb_str_2-1]);
-                         int val4 = max(val3, t_matrice[i-1][j][k-1][l] + r_mat[i][j][k][l]);
-                         int val5 =  max(val4, t_matrice[i][j-1][k][l-1] + c_mat[i][j][k][l]);
-                         int val6 = max(val5, t_matrice[i-1][j-1][k-1][l-1] + c_mat[i-1][j][k-1][l] + r_mat[i][j][k][l]);
-                         t_matrice[i][j][k-1][l] = max (val6, t_matrice[i-1][j-1][k-1][l-1] + c_mat[i][j][k][l] + r_mat[i][j-1][k][l-1]);
-                     }
+           MPI_Recv(&r_matrice_rk, pre_computation_final_size, MPI_INT, rk, rk, MPI_COMM_WORLD, &status);  
+           MPI_Recv(&c_matrice_rk, pre_computation_final_size, MPI_INT, rk, rk, MPI_COMM_WORLD, &status);
+           for (int i = 0; i < my_motif[0].size(); i++) {
+                for (int j = 0; j < my_motif[0].size(); j++) {
+                    for (int k = 0; k < nb_str_2; k++) {
+                        for (int l = 0; l < str_size_2; l++) {
+                                r_matrice[lineFilledR+1][j][k][l] = r_matrice_rk[i][j][k][l];
+                        }
+                    }
 
                 }
 
-             }
+                lineFilledR++;
+            }
 
-         }
+            for (int i = 0; i < my_motif[0].size(); i++) {
+                for (int j = 0; j < my_motif[0].size(); j++) {
+                    for (int k = 0; k < nb_str_2; k++) {
+                        for (int l = 0; l < str_size_2; l++) {
+                                c_matrice[lineFilledC+1][j][k][l] = c_matrice_rk[i][j][k][l];
+                        }
+                    }
+
+                }
+
+                lineFilledC++;
+            }
+        }
+       
+    //    MPI_Bcast(&r_matrice, pre_computation_final_size, MPI_INT, 0, MPI_COMM_WORLD);
+     if (rank == 0){
+
+            //prepare data partitioning data structure.
+            Dag my_dag;
+            Cube* my_cube = my_dag.buildDag(nproc, str_size_1, str_size_2, nb_str_1, nb_str_2);
+
+            cout <<"my cube"<< my_cube << endl;
+
+            for (int l = 0; l < nb_str_2; l++)
+            {
+
+            }
 
 
-//Display of T table
-    // cout <<"\n Display T table \n" << endl;
-    // for (int i = 0; i < nb_str_1; i++) {
-    //      for (int j = 0; j < str_size_1; j++) {
-    //          for (int k = 0; k < nb_str_2; k++) {
-    //              for (int l = 0; l < str_size_2; l++) {
-    //                  cout << i << " " << j << " " << k << " " << l << " -> " << t_matrice[i][j][j][l] << endl;
-    //              }
-    //          }
-    //     }
-    //  }
+            int**** t_matrice;
+                t_matrice = new int*** [nb_str_1];
+                    for (int i= 0; i < nb_str_1; i++){
+                    t_matrice[i] = new int**[str_size_1];
+                        for (int j= 0; j < str_size_1; j++){
+                        t_matrice[i][j] = new int*[nb_str_2];
+                            for (int k= 0; k < nb_str_2; k++){
+                            t_matrice[i][j][k] = new int[str_size_2];
+                    }
+                }
+            }
 
+
+
+
+
+
+        ///Initalization maginales of T table
+                for (int i = 0; i < my_motif->size(); i++) {
+                    for (int j = 0; j < my_motif[0].size(); j++) {
+                        for (int k = 0; k < nb_str_2; k++) {
+                            for (int l = 0; l < str_size_2; l++) {
+                                t_matrice[i][j][k][l] = 0;
+                                t_matrice[0][j][k][l] = (k+1)*(l+1);
+                                t_matrice[i][0][k][l] = (k+1)*(l+1);
+                                t_matrice[i][j][0][l] = (i+1)*(j+1);
+                                t_matrice[i][j][k][0] = (i+1)*(j+1);
+                            }
+
+                        }
+
+                    }
+                }
+
+            
+
+        //Filling of T table
+                for (int i = 1; i < my_motif->size(); i++) {
+                    for (int j = 1; j < my_motif[0].size(); j++) {
+                        for (int k = 1; k < nb_str_2; k++) {
+                            for (int l = 1; l < str_size_2; l++) {
+                                int val1 = max(t_matrice[i-1][j][k][l] + dr_mat[i][nb_str_1-1], t_matrice[i][j-1][k][l] + dc_mat[i][nb_str_1-1]);
+                                int val2 = max(val1, t_matrice[i][j][k-1][l] + ir_mat[i][nb_str_2-1]);
+                                int val3 = max(val2, t_matrice[i][j][k-1][l-1] + ic_mat[i][nb_str_2-1]);
+                                int val4 = max(val3, t_matrice[i-1][j][k-1][l] + r_matrice[i][j][k][l]);
+                                int val5 =  max(val4, t_matrice[i][j-1][k][l-1] + c_matrice[i][j][k][l]);
+                                int val6 = max(val5, t_matrice[i-1][j-1][k-1][l-1] + c_matrice[i-1][j][k-1][l] + r_matrice[i][j][k][l]);
+                                t_matrice[i][j][k-1][l] = max (val6, t_matrice[i-1][j-1][k-1][l-1] + c_matrice[i][j][k][l] + r_matrice[i][j-1][k][l-1]);
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+        //Display of T table
+            //  cout <<"\n Display T table \n" << endl;
+            //   for (int i = 0; i < nb_str_1; i++) {
+            //        for (int j = 0; j < str_size_1; j++) {
+            //            for (int k = 0; k < nb_str_2; k++) {
+            //                for (int l = 0; l < str_size_2; l++) {
+            //                   cout << i << " " << j << " " << k << " " << l << " -> " << r_matrice[i][j][j][l] << endl;
+            //                }
+            //            }
+            //       }
+            //    }
+         }     
+    }
+    
+    
      MPI_Finalize();
    
 }
@@ -549,16 +717,16 @@ int main(int argc, char *argv[]) {
     string str1 = "tessa";
     string str2 = "Grace";
 
-    int nb_str_1 = 10, nb_str_2 = 10;
+    int nb_str_1 = 15, nb_str_2 = 25;
     ifstream datasets("input/datasets.txt");
     string* motif_1= first_pattern_construction(str_size_1, nb_str_1);
     string* motif_2 = second_pattern_construction(str_size_2, nb_str_2);
     t_matrice_func(argc, argv, str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
 
  	int end = time(& second_timer);
-    	cout << "Treatment start period is about "<< start << endl;
-    	cout << "Treatment end period is about "<< end << endl;
-     	cout << "Treatment end period is about "<< end-start<< endl;
+    	// cout << "Treatment start period is about "<< start << endl;
+    	// cout << "Treatment end period is about "<< end << endl;
+     	// cout << "Treatment end period is about "<< end-start<< endl;
 
 
 }
