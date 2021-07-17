@@ -286,14 +286,14 @@ void t_matrice_func(vector<vector<vector<vector<int>>>> & t_matrice, ifstream & 
 
 int main(int argc, char *argv[]) {
 
-    unsigned int str_size_1 = 12, str_size_2 = 12;
+    unsigned int str_size_1 = 30, str_size_2 = 30;
     string str1 = "tessa";
     string str2 = "Grace";
     
     vector<string> motif_1;
     vector<string> motif_2;
 
-    int nb_str_1 = 12, nb_str_2 = 12;
+    int nb_str_1 = 30, nb_str_2 = 30;
     ifstream datasets("input/datasets.txt");
     //pattern_construction(datasets, str_size_1, str_size_2, nb_str_1, nb_str_2, str1, str2, motif_1, motif_2);
     vector<vector<vector<vector<int>>>> t_matrice(nb_str_1, vector<vector<vector<int>>>(str_size_1, vector<vector<int>>(nb_str_2, vector<int>(str_size_2, 0))));

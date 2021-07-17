@@ -277,16 +277,16 @@ void t_matrice_func( int str_size_1, int str_size_2, int nb_str_1, int nb_str_2,
     time_t s_timer;
 
     double pre_start = time(&first_pre_timer);
-     int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
-     int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
-     int** ir_mat = ir_matrice_func(str_size_2, nb_str_2);
-     int** ic_mat = ic_matrice_func(str_size_2, nb_str_2);
+    int** dr_mat = dr_matrice_func(str_size_1, nb_str_1);
+    int** dc_mat = dc_matrice_func(str_size_1, nb_str_1);
+    int** ir_mat = ir_matrice_func(str_size_2, nb_str_2);
+    int** ic_mat = ic_matrice_func(str_size_2, nb_str_2);
 
     
      int**** r_mat = r_matrice_func(str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
      int**** c_mat = c_matrice_func(str_size_1, str_size_2, nb_str_1, nb_str_2, motif_1, motif_2);
-     double pre_end = time(&second_pre_timer);
-
+    
+    double pre_end = time(&second_pre_timer);
     cout << "Pre-treatment period is about "<< pre_end - pre_start << endl;
 
     double  p_start = time(&f_timer);
@@ -369,11 +369,11 @@ int main(int argc, char *argv[]) {
     int start = time( &first_timer);
 
 
-    unsigned int str_size_1 = 100, str_size_2 = 100;
+    unsigned int str_size_1 = 50, str_size_2 = 50;
     string str1 = "tessa";
     string str2 = "Grace";
 
-    int nb_str_1 = 100, nb_str_2 = 100;
+    int nb_str_1 = 50, nb_str_2 = 50;
    
     ifstream datasets("input/datasets.txt");
     string* motif_1= first_pattern_construction(str_size_1, nb_str_1);
